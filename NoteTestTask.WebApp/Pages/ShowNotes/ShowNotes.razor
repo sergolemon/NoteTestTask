@@ -1,0 +1,53 @@
+﻿@page "/"
+
+@using Microsoft.EntityFrameworkCore
+@using NoteTestTask.WebApp.Data.Entities
+@using NoteTestTask.WebApp.Data
+@using NoteTestTask.WebApp.Interfaces
+
+@inject INoteRepository NoteRepository
+
+<div class="top">
+    <div class="nav-box">
+        <a href="create-note" class="nav">CREATE</a>
+    </div>
+    <div class="search-container">
+        <div class="search-box">
+            <input type="text" @bind-value="searchQuery" />
+            <button @onclick="FindNotes">SEARCH</button>
+        </div>
+    </div>
+</div>
+<div class="notes-container">
+    @foreach (var item in notes)
+    {
+        <NoteItem OnDeleteNote="DeleteNote" Item="item" />
+    }
+</div>
+
+@code{
+    const int pageNotesCount = 10;
+
+    string? searchQuery;
+    int totalNotes;
+    int pageNum = 1;
+    IList<Note> notes = new List<Note>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        totalNotes = await NoteRepository.GetNotesTotalCountAsync();
+        notes = await NoteRepository.GetNotesAsync(pageNum, pageNotesCount);
+    }
+
+    async Task FindNotes()
+    {
+        notes = await NoteRepository.GetNotesAsync(pageNum, pageNotesCount, searchQuery);
+    }
+
+    async Task DeleteNote(Note note)
+    {
+        NoteRepository.DeleteNote(note);
+        await NoteRepository.SaveChangesAsync();
+        notes.Remove(note);
+    }
+}

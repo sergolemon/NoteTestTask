@@ -1,0 +1,11 @@
+﻿@using NoteTestTask.WebApp.Data.Entities;
+
+<button @onclick="(async (e) => { await OnDeleteNote.InvokeAsync(Item); })">@Item.Title</button>
+<a href="edit-note/@Item.Id">EDIT</a>
+
+@code {
+    [Parameter]
+    public Note Item { get; set; }
+    [Parameter]
+    public EventCallback<Note> OnDeleteNote { get; set; }
+}
