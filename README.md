@@ -10,3 +10,11 @@ To start, you only need to configure the database connection string given in the
 }
 
 ```
+There are also migrations in the project; to use migrations you need to delete the line Database.EnsureCreated(); in the file EfPostgresDbContext.cs:
+```cs
+public EfPostgresDbContext(DbContextOptions<EfPostgresDbContext> opts) : base(opts)
+{
+    //remove this before migration
+    Database.EnsureCreated();
+}
+```
