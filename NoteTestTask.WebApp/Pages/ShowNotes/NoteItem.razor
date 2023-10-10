@@ -1,11 +1,54 @@
 ﻿@using NoteTestTask.WebApp.Data.Entities;
 
-<button @onclick="(async (e) => { await OnDeleteNote.InvokeAsync(Item); })">@Item.Title</button>
-<a href="edit-note/@Item.Id">EDIT</a>
+<div class="note-item">
+    <div>@Item.Title</div>
+    <div>
+        <div>
+        @if (showAllDesc)
+        {
+            <span>@Item.Description&nbsp;</span><button @onclick="HideAllDesc" class="link-btn">hide</button>
+        }
+        else
+        {
+            <span>@(shortDesc != null ? shortDesc + " " : Item.Description)</span>
+            if (shortDesc != null)
+            {
+                <button @onclick="ShowAllDesc" class="link-btn">read more</button>
+            }
+        }
+        </div>
+    </div>
+    <div>@Item.UpdatedDate</div>
+    <div>
+        <button class="ico-btn" @onclick="(async () => { await OnDeleteNote.InvokeAsync(Item); })">&#10006;</button>
+        <a class="ico-btn" href="edit-note/@Item.Id">&#9998;</a>
+    </div>
+</div>
 
 @code {
+    const int shortDescLength = 15;
+
     [Parameter]
     public Note Item { get; set; }
     [Parameter]
     public EventCallback<Note> OnDeleteNote { get; set; }
+
+    string? shortDesc;
+    bool showAllDesc;
+
+    protected override void OnParametersSet()
+    {
+        if (Item.Description.Length > shortDescLength)
+            shortDesc = string.Concat(Item.Description.Take(shortDescLength - 3)) + "...";
+    }
+
+    void ShowAllDesc()
+    {
+        showAllDesc = true;
+    }
+
+    void HideAllDesc()
+    {
+        showAllDesc = false;
+    }
 }

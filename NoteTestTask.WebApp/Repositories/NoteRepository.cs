@@ -7,21 +7,31 @@ namespace NoteTestTask.WebApp.Repositories
 {
     public class NoteRepository : INoteRepository
     {
-        private readonly EfPostgresDbContext _dbContext;
+        private readonly IDbContextFactory<EfPostgresDbContext> _dbContextFactory;
 
-        public NoteRepository(EfPostgresDbContext dbContext)
+        public NoteRepository(IDbContextFactory<EfPostgresDbContext> dbContextFactory)
         {
-            _dbContext = dbContext;
+            _dbContextFactory = dbContextFactory;
         }
 
-        public void DeleteNote(Note note)
+        public async Task DeleteNoteAsync(Note note, CancellationToken cancellationToken = default)
         {
-            _dbContext.Notes.Remove(note);
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            db.Notes.Remove(note);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        public async Task CreateNoteAsync(Note note, CancellationToken cancellationToken = default)
+        {
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            db.Notes.Add(note);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<Note?> GetNoteByIdOrNullAsync(Guid id, CancellationToken cancellationToken = default)
         {
-            return await _dbContext.Notes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            return await db.Notes.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
         public async Task<IList<Note>> GetNotesAsync(
@@ -30,7 +40,8 @@ namespace NoteTestTask.WebApp.Repositories
             string? searchQuery = null, 
             CancellationToken cancellationToken = default)
         {
-            IQueryable<Note> query = _dbContext.Notes;
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            IQueryable<Note> query = db.Notes;
 
             if (!string.IsNullOrEmpty(searchQuery))
             {
@@ -38,27 +49,36 @@ namespace NoteTestTask.WebApp.Repositories
                 query = query.Where(x => x.Title.ToLower().StartsWith(searchQuery));
             }
 
-            return await query.Skip((page - 1) * itemsCount).Take(itemsCount).ToListAsync(cancellationToken);
+            return await query.OrderByDescending(x => x.CreatedDate)
+                .Skip((page - 1) * itemsCount)
+                .Take(itemsCount).ToListAsync(cancellationToken);
         }
 
         public async Task<int> GetNotesTotalCountAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbContext.Notes.CountAsync(cancellationToken);
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            return await db.Notes.CountAsync(cancellationToken);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        public async Task UpdateNoteAsync(Note note, CancellationToken cancellationToken = default)
         {
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            using var db = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
+            db.Update(note).Property(x => x.CreatedDate).IsModified = false;
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        public void UpdateNote(Note note)
+        public async Task<int> GetNotesCountBySearchAsync(string? searchQuery, CancellationToken cancellationToken = default)
         {
-            _dbContext.Notes.Update(note);
-        }
+            using var db = await _dbContextFactory.CreateDbContextAsync();
+            IQueryable<Note> query = db.Notes;
 
-        public void Dispose()
-        {
-            _dbContext.Dispose();
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                searchQuery = searchQuery.ToLower();
+                query = query.Where(x => x.Title.ToLower().StartsWith(searchQuery));
+            }
+            
+            return await query.CountAsync(cancellationToken);
         }
     }
 }

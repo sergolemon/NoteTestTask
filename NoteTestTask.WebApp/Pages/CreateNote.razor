@@ -1,7 +1,38 @@
 ﻿@page "/create-note"
 
-<h3>CreateNote</h3>
+@using NoteTestTask.WebApp.Interfaces;
+@using NoteTestTask.WebApp.Services;
+@using NoteTestTask.WebApp.ViewModels;
+
+@inject INoteRepository NoteRepository
+@inject NotesCountTriggerService NotesCountTriggerService
+@inject NavigationManager NavigationManager
+
+<h5>Create note</h5>
+<EditForm Model="note" class="form" OnValidSubmit="ValidSubmit">
+    <DataAnnotationsValidator />
+    <div>
+        <label>Title: </label><br />
+        <input @bind-value="note.Title" />
+        <ValidationMessage For="() => note.Title" />
+    </div>
+    <div>
+        <label>Description: </label><br/>
+        <input @bind-value="note.Description" />
+        <ValidationMessage For="() => note.Description" />
+    </div>
+    <div>
+        <button type="submit">submit</button>
+    </div>
+</EditForm>
 
 @code {
+    CreateNoteVm note = new();
 
+    async Task ValidSubmit()
+    {
+        await NoteRepository.CreateNoteAsync(new Data.Entities.Note(){ Title = note.Title, Description = note.Description });
+        NotesCountTriggerService.OnCountIncrement?.Invoke();
+        NavigationManager.NavigateTo("/");
+    }
 }

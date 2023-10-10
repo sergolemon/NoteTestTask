@@ -1,3 +1,24 @@
-﻿button {
-    background-color: red;
+﻿.notes-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    flex: 1;
+}
+
+.top{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.top > .nav-box > a{
+    color: cornflowerblue;
+}
+
+.top > .search-container{
+
+}
+
+.pagination{
+    text-align: center;
 }

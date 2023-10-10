@@ -1,0 +1,49 @@
+﻿.note-item{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
+}
+
+.note-item > div:last-child{
+    text-align: center;
+    justify-content: center;
+}
+
+.note-item > div{
+    transition: ease 1s;
+    width: 25%;
+    display: flex;
+    align-items: center;
+}
+
+    .note-item > div > div {
+        vertical-align: middle;
+        word-break: break-word;
+        overflow-y: auto;
+        min-height: 50px;
+        max-height: 90px;
+        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+    }
+
+.ico-btn{
+    padding: 0;
+    margin: 5px;
+    background-color: unset;
+    text-decoration: 0;
+    color: unset;
+    border: none;
+    cursor: pointer;
+}
+
+.link-btn{
+    cursor: pointer;
+    text-decoration: underline;
+    color: cornflowerblue;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background-color: unset;
+}

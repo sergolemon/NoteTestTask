@@ -4,18 +4,24 @@
 @using NoteTestTask.WebApp.Data.Entities
 @using NoteTestTask.WebApp.Data
 @using NoteTestTask.WebApp.Interfaces
+@using NoteTestTask.WebApp.Services;
 
 @inject INoteRepository NoteRepository
+@inject NotesCountTriggerService NotesCountTriggerService
 
+<h5>Notes</h5>
 <div class="top">
     <div class="nav-box">
-        <a href="create-note" class="nav">CREATE</a>
+        <a href="create-note" class="nav">create nete</a>
     </div>
     <div class="search-container">
         <div class="search-box">
             <input type="text" @bind-value="searchQuery" />
             <button @onclick="FindNotes">SEARCH</button>
         </div>
+    </div>
+    <div>
+        <span>Total notes: @totalNotes</span>
     </div>
 </div>
 <div class="notes-container">
@@ -24,30 +30,59 @@
         <NoteItem OnDeleteNote="DeleteNote" Item="item" />
     }
 </div>
+<div class="pagination">
+    <button @onclick="PrevPage"> &#8249; </button>
+    <button @onclick="NextPage"> &#8250; </button>
+</div>
 
 @code{
-    const int pageNotesCount = 10;
+    const int pageNotesCount = 5;
 
     string? searchQuery;
     int totalNotes;
     int pageNum = 1;
+    int notesCountByCurrQuery;
     IList<Note> notes = new List<Note>();
 
     protected override async Task OnInitializedAsync()
-    {
+    { 
         totalNotes = await NoteRepository.GetNotesTotalCountAsync();
-        notes = await NoteRepository.GetNotesAsync(pageNum, pageNotesCount);
+        await FindNotes();
+        NotesCountTriggerService.OnCountIncrement += () => { totalNotes++; InvokeAsync(this.StateHasChanged); };
+        NotesCountTriggerService.OnCountDecrement += () => { totalNotes--; InvokeAsync(this.StateHasChanged); };
     }
 
     async Task FindNotes()
     {
+        notesCountByCurrQuery = await NoteRepository.GetNotesCountBySearchAsync(searchQuery);
         notes = await NoteRepository.GetNotesAsync(pageNum, pageNotesCount, searchQuery);
     }
 
     async Task DeleteNote(Note note)
     {
-        NoteRepository.DeleteNote(note);
-        await NoteRepository.SaveChangesAsync();
+        await NoteRepository.DeleteNoteAsync(note);
         notes.Remove(note);
+
+        if (notes.Count == 0) await FindNotes();
+
+        NotesCountTriggerService.OnCountDecrement?.Invoke();
+    }
+
+    async Task PrevPage()
+    {
+        if (pageNum > 1)
+        {
+            pageNum--;
+            await FindNotes();
+        }
+    }
+
+    async Task NextPage()
+    {
+        if (pageNum * pageNotesCount < notesCountByCurrQuery)
+        {
+            pageNum++;
+            await FindNotes();
+        }
     }
 }

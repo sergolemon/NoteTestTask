@@ -1,8 +1,45 @@
 ﻿@page "/edit-note/{id:guid}"
 
-<h3>EditNote @Id</h3>
+@using NoteTestTask.WebApp.Interfaces;
+@using NoteTestTask.WebApp.ViewModels;
+
+@inject INoteRepository NoteRepository
+@inject NavigationManager NavigationManager
+
+<h5>Edit note</h5>
+<EditForm Model="note" class="form" OnValidSubmit="ValidSubmit">
+    <DataAnnotationsValidator />
+    <div>
+        <label>Title: </label><br />
+        <input @bind-value="note.Title" />
+        <ValidationMessage For="() => note.Title" />
+    </div>
+    <div>
+        <label>Description: </label><br />
+        <input @bind-value="note.Description" />
+        <ValidationMessage For="() => note.Description" />
+    </div>
+    <div>
+        <button type="submit">submit</button>
+    </div>
+</EditForm>
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
+
+    EditNoteVm note = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var existsNote = await NoteRepository.GetNoteByIdOrNullAsync(Id);
+
+        note = new EditNoteVm() { Id = existsNote.Id, Title = existsNote.Title, Description = existsNote.Description };
+    }
+
+    async Task ValidSubmit()
+    {
+        await NoteRepository.UpdateNoteAsync(new Data.Entities.Note(){ Id = Id, Title = note.Title, Description = note.Description });
+        NavigationManager.NavigateTo("/");
+    }
 }
