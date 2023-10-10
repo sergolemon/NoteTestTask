@@ -9,7 +9,8 @@ namespace NoteTestTask.WebApp.Data
 
         public EfPostgresDbContext(DbContextOptions<EfPostgresDbContext> opts) : base(opts)
         {
-            //Database.EnsureCreated();
+            //remove this before migration
+            Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
