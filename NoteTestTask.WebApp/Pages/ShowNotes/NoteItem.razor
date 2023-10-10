@@ -41,6 +41,7 @@
         if (Item.Description.Length > shortDescLength)
             shortDesc = string.Concat(Item.Description.Take(shortDescLength - 3)) + "...";
         else shortDesc = null;
+        showAllDesc = false;
     }
 
     void ShowAllDesc()
