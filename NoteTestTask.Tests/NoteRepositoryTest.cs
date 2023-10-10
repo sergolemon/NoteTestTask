@@ -18,5 +18,18 @@ namespace NoteTestTask.Tests
 
             Assert.NotNull(await noteRepository.GetNoteByIdOrNullAsync(newNote.Id));
         }
+
+        [Fact]
+        public async Task TestDeleteNote()
+        {
+            var sp = DependencyAccessor.CreateServiceProvider();
+            var noteRepository = sp.GetRequiredService<INoteRepository>();
+
+            var delNote = (await noteRepository.GetNotesAsync(1, 1)).First();
+
+            await noteRepository.DeleteNoteAsync(delNote);
+
+            Assert.Null(await noteRepository.GetNoteByIdOrNullAsync(delNote.Id));
+        }
     }
 }
