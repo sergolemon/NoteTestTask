@@ -9,7 +9,7 @@ namespace NoteTestTask.WebApp.Data
             new Note
             {
                 Title = "Long text note",
-                Description = "long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text",
+                Description = "long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text long text",
             },
             new Note 
             { 

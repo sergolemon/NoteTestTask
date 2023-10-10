@@ -6,8 +6,10 @@ namespace NoteTestTask.WebApp.ViewModels
     {
         public Guid Id { get; set; }
         [Required]
+        [MaxLength(90)]
         public string Title { get; set; }
         [Required]
+        [MaxLength(300)]
         public string Description { get; set; }
     }
 }
